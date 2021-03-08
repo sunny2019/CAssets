@@ -1,0 +1,17 @@
+{
+    "name": "CAssets.Editor",
+    "references": [
+        "GUID:92f8eada65f3d4e45b646742195e2f27"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
