@@ -230,28 +230,31 @@ namespace CAssets
 
             for (int i = 0; i < abNames.Count; i++)
             {
-                ab = null;
-                webRequest = UnityWebRequestAssetBundle.GetAssetBundle(CAssetsSetting.BuildABPath + abNames[i]);
-                yield return webRequest.SendWebRequest();
-                if (webRequest.isHttpError)
+                if (CAssets.Instance.GetAssetBundleInCache(abNames[i]) == null)
                 {
-                    Debug.Log($"{abNames[i]}下载失败，正在尝试重新下载");
-                    i--;
-                    continue;
-                }
+                    ab = null;
+                    webRequest = UnityWebRequestAssetBundle.GetAssetBundle(CAssetsSetting.BuildABPath + abNames[i]);
+                    yield return webRequest.SendWebRequest();
+                    if (webRequest.isHttpError)
+                    {
+                        Debug.Log($"{abNames[i]}下载失败，正在尝试重新下载");
+                        i--;
+                        continue;
+                    }
 
-                if (!webRequest.isDone)
-                {
-                    yield return null;
-                }
+                    if (!webRequest.isDone)
+                    {
+                        yield return null;
+                    }
 
-                if (!webRequest.isHttpError && webRequest.isDone)
-                {
-                    
-                    ab = DownloadHandlerAssetBundle.GetContent(webRequest);
-                    CAssets.Instance.AddAssetBundleInCache(abNames[i], ab);
-                    processCallBack?.Invoke( (float)(i+1)/(float)abNames.Count);
-                    AssetBundle.UnloadAllAssetBundles(false);
+                    if (!webRequest.isHttpError && webRequest.isDone)
+                    {
+
+                        ab = DownloadHandlerAssetBundle.GetContent(webRequest);
+                        CAssets.Instance.AddAssetBundleInCache(abNames[i], ab);
+                        processCallBack?.Invoke((float) (i + 1) / (float) abNames.Count);
+                        AssetBundle.UnloadAllAssetBundles(false);
+                    }
                 }
             }
             finshedCallBack?.Invoke();
