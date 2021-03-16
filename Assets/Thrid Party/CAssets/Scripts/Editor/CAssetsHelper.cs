@@ -52,6 +52,7 @@ namespace CAssets
                 depens = AssetDatabase.GetDependencies(assetPathStr);
                 assetPaths.AddRange(depens);
             }
+
             return assetPaths;
         }
 
@@ -131,11 +132,8 @@ namespace CAssets
         public static Dictionary<string, string> GetDicAssetNameAndBundleName(List<string> allBuildAssets, out List<AssetBundleBuild> ABBuilds)
         {
             Dictionary<string, string> dic_BuildABAssets = new Dictionary<string, string>();
-            List<string> pureAssetPaths = new List<string>();
-            pureAssetPaths.AddRange(allBuildAssets);
-
             int sceneIndex = 0;
-            string pathFloder = "";
+            int assetIndex = 0;
             for (int i = 0; i < allBuildAssets.Count; i++)
             {
                 if (!dic_BuildABAssets.ContainsKey(allBuildAssets[i]))
@@ -152,90 +150,27 @@ namespace CAssets
                         }
 
                         EditorBuildSettings.scenes = scenes;
-                        pathFloder = (Directory.GetParent(allBuildAssets[i]) + "/" + Path.GetFileNameWithoutExtension(allBuildAssets[i]) + "/").Replace('\\', '/');
-
-                        dic_BuildABAssets.Add(allBuildAssets[i], CAssetsSetting.ScenePrefix + sceneIndex+".unity3d");
-
-                        for (int j = 0; j < allBuildAssets.Count; j++)
-                        {
-                            if (allBuildAssets[j].StartsWith(pathFloder))
-                            {
-                                //场景包括烘焙资源已添加进来
-                                dic_BuildABAssets.Add(allBuildAssets[j], CAssetsSetting.ScenePrefix + sceneIndex+".unity3d");
-                            }
-                        }
-
+                        dic_BuildABAssets.Add(allBuildAssets[i], CAssetsSetting.ScenePrefix + sceneIndex);
                         sceneIndex++;
                     }
+                    else
+                    {
+                        dic_BuildABAssets.Add(allBuildAssets[i], CAssetsSetting.AssetPrefix + assetIndex);
+                        assetIndex++;
+                    }
                 }
-            }
-
-            int assetIndex = 0;
-            for (int i = 0; i < allBuildAssets.Count; i++)
-            {
-                if (!dic_BuildABAssets.ContainsKey(allBuildAssets[i]))
-                {
-                    dic_BuildABAssets.Add(allBuildAssets[i], CAssetsSetting.AssetPrefix + assetIndex);
-                    assetIndex++;
-                }
-            }
-
-            Dictionary<string, List<string>> dic_AssetBundle = new Dictionary<string, List<string>>();
-            foreach (var v in dic_BuildABAssets)
-            {
-                if (!dic_AssetBundle.ContainsKey(v.Value))
-                {
-                    dic_AssetBundle.Add(v.Value, new List<string>());
-                }
-
-                dic_AssetBundle[v.Value].Add(v.Key);
             }
 
             ABBuilds = new List<AssetBundleBuild>();
-            foreach (var v in dic_AssetBundle)
+            foreach (var v in dic_BuildABAssets)
             {
                 AssetBundleBuild temp = new AssetBundleBuild();
-                temp.assetBundleName = v.Key;
-                temp.assetNames = v.Value.ToArray();
+                temp.assetBundleName = v.Value;
+                temp.assetNames = new[] {v.Key};
                 ABBuilds.Add(temp);
             }
 
-
             return dic_BuildABAssets;
-        }
-
-
-        public static List<AssetBundleBuild> GetAssetAB(List<AssetBundleBuild> list_Build)
-        {
-            List<AssetBundleBuild> builds = new List<AssetBundleBuild>();
-            for (int i = 0; i < list_Build.Count; i++)
-            {
-                if (list_Build[i].assetBundleName.StartsWith(CAssetsSetting.AssetPrefix))
-                {
-                    builds.Add(list_Build[i]);
-                }
-            }
-            return builds;
-        }
-
-        public static Dictionary<string, string> GetSceneAB(List<AssetBundleBuild> list_Build)
-        {
-            Dictionary<string, string> dic_SceneBuilds = new Dictionary<string, string>();
-            for (int i = 0; i < list_Build.Count; i++)
-            {
-                if (list_Build[i].assetBundleName.StartsWith(CAssetsSetting.ScenePrefix))
-                {
-                    for (int j = 0; j < list_Build[i].assetNames.Length; j++)
-                    {
-                        if (list_Build[i].assetNames[j].EndsWith(".unity"))
-                        {
-                            dic_SceneBuilds.Add(list_Build[i].assetBundleName, list_Build[i].assetNames[j]);
-                        }
-                    }
-                }
-            }
-
-            return dic_SceneBuilds;
         }
     }
 }

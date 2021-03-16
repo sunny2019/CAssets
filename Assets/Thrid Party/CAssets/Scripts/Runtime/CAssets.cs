@@ -17,6 +17,7 @@ namespace CAssets
         
         private void Awake()
         {
+            gameObject.hideFlags = HideFlags.HideInHierarchy;
             CAssetsConfig CAssetsConfig = Resources.Load<CAssetsConfig>("CAssetsConfig");
             _config = CAssetsConfig.ABAssetsConfig;
 #if UNITY_EDITOR
@@ -35,7 +36,6 @@ namespace CAssets
         m_ResourceManager = new ResourcesManager();
         _config = Resources.Load<CAssetsConfig>("CAssetsConfig").ABAssetsConfig;
         StartCoroutine(GetManifest());
-
 #endif
         }
 

@@ -37,26 +37,19 @@ namespace CAssets
             //生成打包builds
             Debug.Log("资源数量：" + buildABAssets.Count + "\t字典索引数量：" + dic_BuildABAssets.Count + "\t打包配置数量：" + list_Builds.Count);
 
-
-            if (!Directory.Exists(CAssetsSetting.BuildABPath))
-                Directory.CreateDirectory(CAssetsSetting.BuildABPath);
-
-
-            BuildPipeline.BuildAssetBundles(CAssetsSetting.BuildABPath, CAssetsHelper.GetAssetAB(list_Builds).ToArray(), BuildAssetBundleOptions.CollectDependencies,
-                EditorUserBuildSettings.activeBuildTarget);
-            Dictionary<string, string> dic_Scene = CAssetsHelper.GetSceneAB(list_Builds);
-            foreach (var v in dic_Scene)
+            if (buildABAssets.Count == dic_BuildABAssets.Count && dic_BuildABAssets.Count == list_Builds.Count)
             {
-                BuildPipeline.BuildPlayer(new[] {v.Value}, CAssetsSetting.BuildABPath + v.Key, EditorUserBuildSettings.activeBuildTarget,
-                    BuildOptions.BuildAdditionalStreamedScenes);
+                if (!Directory.Exists(CAssetsSetting.BuildABPath))
+                    Directory.CreateDirectory(CAssetsSetting.BuildABPath);
+
+                BuildPipeline.BuildAssetBundles(CAssetsSetting.BuildABPath, list_Builds.ToArray(), BuildAssetBundleOptions.None,
+                    EditorUserBuildSettings.activeBuildTarget);
+
+                CAssetsConfig config = Resources.Load<CAssetsConfig>("CAssetsConfig");
+                config.ABAssetsConfig = dic_BuildABAssets;
+
+                AssetDatabase.Refresh();
             }
-
-            
-
-            CAssetsConfig config = Resources.Load<CAssetsConfig>("CAssetsConfig");
-            config.ABAssetsConfig = dic_BuildABAssets;
-
-            AssetDatabase.Refresh();
         }
 
 

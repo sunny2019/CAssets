@@ -1,7 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using CAssets;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
 
 namespace CAssets
@@ -13,6 +10,8 @@ namespace CAssets
         public Image img_Fill;
 
         public Button btn_EnterLoadedScene;
+        
+       
 
         // Start is called before the first frame update
         void Start()
