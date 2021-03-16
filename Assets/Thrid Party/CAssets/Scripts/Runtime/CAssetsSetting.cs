@@ -29,6 +29,15 @@ namespace CAssets
             ".meta",
             ".cs",
         };
+        
+        /// <summary>
+        /// AB包中排除的资源名称
+        /// </summary>
+        public static List<string> ABAssetOutFileFilter = new List<string>()
+        {
+            "LightingData.asset",
+        };
+
 
 
         /// <summary>

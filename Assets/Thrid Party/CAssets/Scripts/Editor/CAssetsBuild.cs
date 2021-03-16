@@ -1,16 +1,17 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using Sirenix.OdinInspector.Editor.Validation;
 using UnityEditor;
 using UnityEngine;
 
 namespace CAssets
 {
-
     public class CAssetsBuild
     {
         [MenuItem("Tools/CAssets/Build")]
         public static void BuildAB()
         {
+            Caching.ClearCache();
             //需要打包AB的资源
             List<string> buildABAssets = new List<string>();
 
@@ -20,34 +21,42 @@ namespace CAssets
 
             //去重
             buildABAssets = buildABAssets.StringListTrim();
+            //去除文件夹
+            buildABAssets = CAssetsHelper.RemoveFolder(buildABAssets);
+            //去除不需要的文件类型
+            buildABAssets = CAssetsHelper.RemoveNotNeededType(buildABAssets);
+            //去除不需要的文件
+            buildABAssets = CAssetsHelper.RemoveNotNeededFile(buildABAssets);
+
 
             //保存资源路径和包名    生成打包builds
             List<AssetBundleBuild> list_Builds;
             Dictionary<string, string> dic_BuildABAssets = CAssetsHelper.GetDicAssetNameAndBundleName(buildABAssets, out list_Builds);
+
+
             //生成打包builds
             Debug.Log("资源数量：" + buildABAssets.Count + "\t字典索引数量：" + dic_BuildABAssets.Count + "\t打包配置数量：" + list_Builds.Count);
-            if (buildABAssets.Count == dic_BuildABAssets.Count && dic_BuildABAssets.Count == list_Builds.Count)
+
+
+            if (!Directory.Exists(CAssetsSetting.BuildABPath))
+                Directory.CreateDirectory(CAssetsSetting.BuildABPath);
+
+
+            BuildPipeline.BuildAssetBundles(CAssetsSetting.BuildABPath, CAssetsHelper.GetAssetAB(list_Builds).ToArray(), BuildAssetBundleOptions.CollectDependencies,
+                EditorUserBuildSettings.activeBuildTarget);
+            Dictionary<string, string> dic_Scene = CAssetsHelper.GetSceneAB(list_Builds);
+            foreach (var v in dic_Scene)
             {
-                // for (int i = 0; i < list_Builds.Count; i++)
-                // {
-                //     Debug.Log(list_Builds[i].assetBundleName + "\t" + list_Builds[i].assetNames.Length + "\t" + list_Builds[i].assetNames[0]);
-                // }
-
-                if (!Directory.Exists(CAssetsSetting.BuildABPath))
-                    Directory.CreateDirectory(CAssetsSetting.BuildABPath);
-
-
-#if UNITY_WEBGL
-                BuildPipeline.BuildAssetBundles(CAssetsSetting.BuildABPath, list_Builds.ToArray(), BuildAssetBundleOptions.None, BuildTarget.WebGL);
-#elif UNITY_STANDALONE
-            BuildPipeline.BuildAssetBundles(CAssetsSetting.BuildABPath, list_Builds.ToArray(), BuildAssetBundleOptions.None, BuildTarget.StandaloneWindows);
-#endif
-
-                CAssetsConfig config = Resources.Load<CAssetsConfig>("CAssetsConfig");
-                config.ABAssetsConfig = dic_BuildABAssets;
-
-                AssetDatabase.Refresh();
+                BuildPipeline.BuildPlayer(new[] {v.Value}, CAssetsSetting.BuildABPath + v.Key, EditorUserBuildSettings.activeBuildTarget,
+                    BuildOptions.BuildAdditionalStreamedScenes);
             }
+
+            
+
+            CAssetsConfig config = Resources.Load<CAssetsConfig>("CAssetsConfig");
+            config.ABAssetsConfig = dic_BuildABAssets;
+
+            AssetDatabase.Refresh();
         }
 
 
@@ -75,7 +84,6 @@ namespace CAssets
             }
 
             AssetDatabase.Refresh();
-
         }
     }
 }
